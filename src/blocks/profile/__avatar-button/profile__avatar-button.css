@@ -1,0 +1,7 @@
+.profile__avatar-button {
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
