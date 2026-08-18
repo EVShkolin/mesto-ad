@@ -4,8 +4,11 @@ import {
   patchProfile,
   postNewCard,
   patchAvatar,
+  deleteCard as deleteCardApi,
+  putLike,
+  deleteLike,
 } from "./api.js";
-import { createCardElement, deleteCard, toggleLike } from "./card.js";
+import { createCardElement, handleLikeClick, handleDeleteClick } from "./card.js";
 import {
   openModalWindow,
   closeModalWindow,
@@ -43,8 +46,11 @@ const image = imagePopup.querySelector(".popup__image");
 const caption = imagePopup.querySelector(".popup__caption");
 
 const cardInfoPopup = document.querySelector(".popup_type_card-info");
-const cardInfoDescription = cardInfoPopup.querySelector("#card-info-description");
 const cardInfoList = cardInfoPopup.querySelector("#card-info-list");
+const cardInfoLikesList = cardInfoPopup.querySelector("#card-info-likes-list");
+
+const deleteCardPopup = document.querySelector(".popup_type_remove_card");
+const deleteCardBtn = deleteCardPopup.querySelector(".popup__button");
 
 const popups = document.querySelectorAll(".popup");
 
@@ -84,30 +90,27 @@ const createInfoString = (label, value) => {
   return li;
 }
 
-const createLikesList = (likes) => {
-  const likesList = document.createElement('ul');
-  likesList.className = 'popup__info-likes-list';
-
-  if (!likes || likes.length === 0) {
+const createLikesList = (likes, likesList) => {
+  const createLike = (textContent) => {
     const li = document.createElement('li');
     li.className = 'popup__info-likes-item';
-    li.textContent = 'Пока никто не лайкнул';
+    li.textContent = textContent;
     likesList.appendChild(li);
-  } else {
-    likes.forEach(like => {
-      const li = document.createElement('li');
-      li.className = 'popup__info-likes-item';
-      li.textContent = like.name || 'Анонимный пользователь';
-      likesList.appendChild(li);
-    });
-  }
+  };
 
-  return likesList;
+  if (!likes || likes.length === 0) {
+    createLike('Пока никто не лайкнул');
+  } else {
+    likes.forEach(like => createLike(like.name));
+  }
 }
 
 const viewCardInfo = (card) => {
-  cardInfoDescription.textContent = `Описание: ${card.name}`;
   cardInfoList.innerHTML = '';
+
+  cardInfoList.appendChild(
+    createInfoString('Описание:', card.name)
+  );
 
   const createdAt = card.createdAt ? new Date(card.createdAt) : new Date();
   cardInfoList.appendChild(
@@ -123,20 +126,8 @@ const viewCardInfo = (card) => {
     createInfoString('Количество лайков:', likesCount.toString())
   );
 
-  const likesItem = document.createElement('li');
-  likesItem.className = 'popup__info-item';
-
-  const labelSpan = document.createElement('span');
-  labelSpan.className = 'popup__info-label';
-  labelSpan.textContent = 'Лайкнули:';
-  likesItem.appendChild(labelSpan);
-
-  const valueDiv = document.createElement('div');
-  valueDiv.className = 'popup__info-value';
-  valueDiv.appendChild(createLikesList(card.likes));
-  likesItem.appendChild(valueDiv);
-
-  cardInfoList.appendChild(likesItem);
+  cardInfoLikesList.innerHTML = '';
+  createLikesList(card.likes, cardInfoLikesList);
 
   openModalWindow(cardInfoPopup);
 }
@@ -147,6 +138,44 @@ const handlePreviewPicture = ({ name, link }) => {
   caption.textContent = name;
   openModalWindow(imagePopup);
 }
+
+let cardToDelete = null;
+
+const fetchLike = (likeBtn, card, likeCounter) => {
+  const isLiked = likeBtn.classList.contains("card__like-button_is-active");
+  const likeMethod = isLiked ? deleteLike : putLike;
+
+  likeMethod(card._id)
+    .then((res) => {
+      handleLikeClick(likeBtn, likeCounter, res.likes.length);
+      card.likes = res.likes;
+    })
+    .catch((err) => console.error(`Ошибка ${isLiked ? 'удаления' : ''} лайка карточки ${err}`));
+};
+
+const requestDelete = (card, cardElement) => {
+  cardToDelete = cardElement;
+  deleteCardPopup.dataset.cardId = card._id;
+  openModalWindow(deleteCardPopup);
+};
+
+deleteCardPopup.addEventListener("submit", (evt) => {
+  evt.preventDefault();
+
+  const cardId = deleteCardPopup.dataset.cardId;
+
+  deleteCardBtn.textContent = "Удаление...";
+
+  deleteCardApi(cardId)
+    .then(() => {
+      handleDeleteClick(cardToDelete);
+      cardToDelete = null;
+      deleteCardPopup.dataset.cardId = "";
+      closeModalWindow(deleteCardPopup);
+    })
+    .catch((err) => console.error(`Ошибка удаления карточки ${err}`))
+    .finally(() => (deleteCardBtn.textContent = "Да"));
+});
 
 avatarEditBtn.addEventListener("click", () => {
   avatarEditForm.reset();
@@ -211,8 +240,8 @@ newCardForm.addEventListener("submit", (evt) => {
       placesList.prepend(
         createCardElement(res, {
           onPreviewPicture: handlePreviewPicture,
-          onLikeIcon: toggleLike,
-          onDeleteCard: deleteCard,
+          onLikeClick: fetchLike,
+          onDeleteClick: requestDelete,
           onInfoClick: viewCardInfo,
           currentUser: res.owner,
         })
@@ -240,8 +269,8 @@ Promise.all([getAboutMe(), getInitialCards()])
       placesList.append(
         createCardElement(card, {
           onPreviewPicture: handlePreviewPicture,
-          onLikeIcon: toggleLike,
-          onDeleteCard: deleteCard,
+          onLikeClick: fetchLike,
+          onDeleteClick: requestDelete,
           onInfoClick: viewCardInfo,
           currentUser: user,
         })

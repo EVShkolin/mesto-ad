@@ -16,7 +16,6 @@
 @import url('./__error/_visible/popup__error_visible.css');
 @import url('./__info/popup__info.css');
 @import url('./__info-item/popup__info-item.css');
-@import url('./__info-description/popup__info-description.css');
 @import url('./__info-term/popup__info-term.css');
 @import url('./__list/popup__list.css');
 @import url('./__list-item/popup__list-item.css');
@@ -81,21 +80,13 @@
     line-height: 29px;
     color: #000000;
     margin: 0 0 20px 0;
-    text-align: center;
-}
-
-.popup__info-description {
-    font-family: 'Inter', sans-serif;
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 17px;
-    color: #666666;
-    margin: 0 0 20px 0;
-    text-align: center;
+    text-align: left;
 }
 
 .popup__info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     list-style: none;
     padding: 0;
     margin: 0 0 20px 0;
@@ -104,22 +95,29 @@
 }
 
 .popup__info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
+    min-height: 19px;
 }
 
 .popup__info-label {
     font-family: 'Inter', sans-serif;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 14px;
     line-height: 17px;
     color: #000000;
     margin: 0;
-    flex: 1;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
+
+.popup__info-label_type_title {
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    font-weight: 900;
+    font-size: 16px;
+    line-height: 29px;
+    color: #000000;
+    background: transparent;
 }
 
 .popup__info-value {
@@ -129,9 +127,7 @@
     font-size: 14px;
     line-height: 17px;
     color: #333333;
-    margin: 0 0 0 10px;
-    flex: 2;
-    text-align: right;
+    
     word-break: break-word;
 }
 
@@ -139,19 +135,27 @@
     list-style: none;
     padding: 0;
     margin: 10px 0 0 0;
-    max-height: 150px;
-    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .popup__info-likes-item {
     font-family: 'Inter', sans-serif;
     font-style: normal;
-    font-weight: 400;
-    font-size: 13px;
-    line-height: 16px;
-    color: #666666;
-    padding: 4px 0;
-    border-bottom: 1px solid #f5f5f5;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 17px;
+    color: #000000;
+    margin: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    height: 21px;
+    max-width: 109px;
+    padding: 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card__info-button {
