@@ -1,1 +1,1 @@
-https://github.com/EVShkolin/mesto-ad
+https://evshkolin.github.io/mesto-ad/
